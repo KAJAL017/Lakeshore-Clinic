@@ -149,7 +149,9 @@ class PatientBookingController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('patient.appointments.index', compact('appointments'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'patient.mobile.my-appointments' : 'patient.appointments.index', compact('appointments'));
     }
 
     public function show(Appointment $appointment): JsonResponse

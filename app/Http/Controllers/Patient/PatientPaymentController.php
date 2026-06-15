@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Patient;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PatientPaymentController extends Controller
 {
@@ -15,7 +16,9 @@ class PatientPaymentController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('patient.payments.index', compact('payments'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'patient.mobile.payments' : 'patient.payments.index', compact('payments'));
     }
 
     public function show(Payment $payment): JsonResponse

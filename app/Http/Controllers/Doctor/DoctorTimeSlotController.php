@@ -15,7 +15,9 @@ class DoctorTimeSlotController extends Controller
         $doctor = Doctor::where('user_id', auth()->id())->first();
         $timeSlots = TimeSlot::where('doctor_id', $doctor?->id)->latest()->get();
 
-        return view('doctor.time-slots.index', compact('timeSlots', 'doctor'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.time-slots' : 'doctor.time-slots.index', compact('timeSlots', 'doctor'));
     }
 
     public function store(Request $request): JsonResponse

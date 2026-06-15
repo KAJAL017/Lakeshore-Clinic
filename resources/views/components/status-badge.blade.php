@@ -8,6 +8,10 @@ $variants = [
     'completed' => 'bg-primary-100 text-primary-700',
     'cancelled' => 'bg-red-100 text-red-700',
     'scheduled' => 'bg-blue-100 text-blue-700',
+    'warning' => 'bg-amber-100 text-amber-700',
+    'info' => 'bg-blue-100 text-blue-700',
+    'success' => 'bg-health-100 text-health-700',
+    'danger' => 'bg-red-100 text-red-700',
 ];
 
 $classes = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' . ($variants[$variant] ?? $variants['default']);

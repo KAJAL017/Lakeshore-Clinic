@@ -51,7 +51,9 @@ use App\Http\Controllers\Patient\PatientProfileController;
 use App\Http\Controllers\Patient\PatientRecordController;
 use App\Http\Controllers\Patient\PatientTelemedicineController;
 use App\Http\Controllers\UnauthorizedController;
+use App\Models\Appointment;
 use App\Models\Meeting;
+use App\Models\Specialization;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Route;
 
@@ -305,6 +307,74 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/records', [DoctorPatientRecordController::class, 'index'])->name('records');
         Route::get('/records/{patient}', [DoctorPatientRecordController::class, 'show'])->name('records.show');
+
+        Route::get('/notifications', function () {
+            $query = UserNotification::where('user_id', auth()->id());
+
+            if (request('search')) {
+                $search = request('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('message', 'like', "%{$search}%");
+                });
+            }
+
+            if (request('status')) {
+                $query->where('status', request('status'));
+            }
+
+            if (request('type')) {
+                $query->where('type', request('type'));
+            }
+
+            $notifications = $query->latest()->paginate(10)->withQueryString();
+            $unreadCount = UserNotification::where('user_id', auth()->id())->where('status', 'unread')->count();
+
+            $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+            return view($isMobile ? 'doctor.mobile.notifications' : 'doctor.notifications.index', compact('notifications', 'unreadCount'));
+        })->name('notifications');
+
+        Route::get('/notifications/unread-count', function () {
+            $count = UserNotification::where('user_id', auth()->id())->where('status', 'unread')->count();
+
+            return response()->json(['count' => $count]);
+        })->name('notifications.unread-count');
+
+        Route::put('/notifications/{notification}/read', function (UserNotification $notification) {
+            if ($notification->user_id !== auth()->id()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+            }
+            $notification->update(['status' => 'read']);
+
+            return response()->json(['success' => true, 'message' => 'Notification marked as read.']);
+        })->name('notifications.mark-read');
+
+        Route::put('/notifications/{notification}/unread', function (UserNotification $notification) {
+            if ($notification->user_id !== auth()->id()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+            }
+            $notification->update(['status' => 'unread']);
+
+            return response()->json(['success' => true, 'message' => 'Notification marked as unread.']);
+        })->name('notifications.mark-unread');
+
+        Route::put('/notifications/{notification}/archive', function (UserNotification $notification) {
+            if ($notification->user_id !== auth()->id()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+            }
+            $notification->update(['status' => 'archived']);
+
+            return response()->json(['success' => true, 'message' => 'Notification archived.']);
+        })->name('notifications.archive');
+
+        Route::post('/notifications/mark-all-read', function () {
+            UserNotification::where('user_id', auth()->id())
+                ->where('status', 'unread')
+                ->update(['status' => 'read']);
+
+            return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);
+        })->name('notifications.mark-all-read');
     });
 
     Route::prefix('patient')->name('patient.')->middleware('role:patient')->group(function () {
@@ -315,7 +385,11 @@ Route::middleware('auth')->group(function () {
 
             return view($isMobile ? 'patient.mobile.book-appointment' : 'patient.book-appointment.index');
         })->name('book-appointment');
-        Route::get('/booking', [PatientBookingController::class, 'index'])->name('booking');
+        Route::get('/booking', function () {
+            $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+            return view($isMobile ? 'patient.mobile.book-appointment' : 'patient.booking.index', ['specializations' => Specialization::where('status', 'active')->get()]);
+        })->name('booking');
         Route::post('/booking', [PatientBookingController::class, 'store'])->name('booking.store');
         Route::get('/booking/doctors', [PatientBookingController::class, 'getDoctors'])->name('booking.doctors');
         Route::get('/booking/dates', [PatientBookingController::class, 'getAvailableDates'])->name('booking.dates');
@@ -323,14 +397,22 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/my-appointments', function () {
             $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
-            $appointments = \App\Models\Appointment::with(['doctor', 'specialization'])
+            $appointments = Appointment::with(['doctor', 'specialization'])
                 ->where('patient_id', auth()->id())
                 ->latest()
                 ->paginate(10);
 
             return view($isMobile ? 'patient.mobile.my-appointments' : 'patient.appointments.index', compact('appointments'));
         })->name('my-appointments');
-        Route::get('/appointments', [PatientBookingController::class, 'myAppointments'])->name('appointments');
+        Route::get('/appointments', function () {
+            $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+            $appointments = Appointment::with(['doctor', 'specialization'])
+                ->where('patient_id', auth()->id())
+                ->latest()
+                ->paginate(10);
+
+            return view($isMobile ? 'patient.mobile.my-appointments' : 'patient.appointments.index', compact('appointments'));
+        })->name('appointments');
         Route::get('/appointments/{appointment}', [PatientBookingController::class, 'show'])->name('appointments.show');
 
         Route::get('/telemedicine', [PatientTelemedicineController::class, 'index'])->name('telemedicine');
@@ -346,12 +428,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/medical-records/prescriptions', [PatientRecordController::class, 'index'])->name('medical-records.prescriptions');
 
         Route::get('/telemedicine-sessions', function () {
+            $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
             $meetings = Meeting::with(['appointment.patient', 'appointment.doctor', 'appointment.specialization'])
                 ->whereHas('appointment', fn ($q) => $q->where('patient_id', auth()->id()))
                 ->latest()
                 ->paginate(10);
 
-            return view('patient.telemedicine-sessions.index', compact('meetings'));
+            return view($isMobile ? 'patient.mobile.telemedicine-sessions' : 'patient.telemedicine-sessions.index', compact('meetings'));
         })->name('telemedicine-sessions');
 
         Route::get('/records', [PatientRecordController::class, 'index'])->name('records');

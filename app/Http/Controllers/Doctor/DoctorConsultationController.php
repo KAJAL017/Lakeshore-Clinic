@@ -19,7 +19,9 @@ class DoctorConsultationController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('doctor.consultations.index', compact('consultations'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.consultations' : 'doctor.consultations.index', compact('consultations'));
     }
 
     public function show(Consultation $consultation): JsonResponse

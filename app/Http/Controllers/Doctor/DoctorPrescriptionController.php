@@ -19,7 +19,9 @@ class DoctorPrescriptionController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('doctor.prescriptions.index', compact('prescriptions'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.prescriptions' : 'doctor.prescriptions.index', compact('prescriptions'));
     }
 
     public function show(Prescription $prescription): JsonResponse

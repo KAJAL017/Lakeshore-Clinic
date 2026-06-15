@@ -15,7 +15,9 @@ class DoctorProfileController extends Controller
     {
         $doctor = Doctor::where('user_id', auth()->id())->first();
 
-        return view('doctor.profile.index', compact('doctor'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.profile' : 'doctor.profile.index', compact('doctor'));
     }
 
     public function update(Request $request): JsonResponse

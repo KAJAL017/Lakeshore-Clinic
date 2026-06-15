@@ -22,17 +22,71 @@ class DoctorDashboardController extends Controller
             ['label' => 'Prescriptions', 'value' => $doctor ? Prescription::where('doctor_id', $doctor->id)->count() : 0, 'trend' => 'Total', 'trendDirection' => 'up', 'color' => 'warning'],
         ];
 
-        $recentActivities = [
-            ['content' => 'Consultation completed', 'time' => '5 minutes ago'],
-            ['content' => 'Prescription sent to pharmacy', 'time' => '15 minutes ago'],
-            ['content' => 'Lab results reviewed', 'time' => '1 hour ago'],
-        ];
+        $recentActivities = collect();
+        if ($doctor) {
+            $recentConsultations = Consultation::where('doctor_id', $doctor->id)
+                ->with('appointment.patient')
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn ($c) => [
+                    'content' => 'Consultation completed with ' . ($c->appointment->patient->name ?? 'Patient'),
+                    'time' => $c->created_at->diffForHumans(),
+                ]);
 
-        $upcomingEvents = [
-            ['title' => 'Team Meeting', 'date' => now()->addDays(1)->toDateString(), 'time' => '10:00 AM', 'description' => 'Weekly staff meeting'],
-            ['title' => 'Patient Follow-up', 'date' => now()->addDays(2)->toDateString(), 'time' => '2:00 PM', 'description' => 'Follow-up consultation'],
-        ];
+            $recentPrescriptions = Prescription::where('doctor_id', $doctor->id)
+                ->with('patient')
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn ($p) => [
+                    'content' => 'Prescription issued to ' . ($p->patient->name ?? 'Patient'),
+                    'time' => $p->created_at->diffForHumans(),
+                ]);
 
-        return view('doctor.dashboard.index', compact('stats', 'recentActivities', 'upcomingEvents', 'doctor'));
+            $recentActivities = $recentConsultations->concat($recentPrescriptions)
+                ->sortByDesc(fn ($a) => $a['time'])
+                ->take(5)
+                ->values();
+        }
+
+        $upcomingEvents = collect();
+        if ($doctor) {
+            $upcomingAppointments = Appointment::where('doctor_id', $doctor->id)
+                ->where('appointment_date', '>=', today())
+                ->with('patient', 'specialization')
+                ->orderBy('appointment_date')
+                ->orderBy('appointment_time')
+                ->take(5)
+                ->get()
+                ->map(fn ($a) => [
+                    'title' => ($a->patient->name ?? 'Patient') . ' - ' . ($a->specialization->name ?? 'Visit'),
+                    'date' => $a->appointment_date,
+                    'time' => \Carbon\Carbon::parse($a->appointment_time)->format('g:i A'),
+                    'description' => ucfirst($a->appointment_type) . ' appointment',
+                ]);
+
+            $upcomingMeetings = Meeting::whereHas('appointment', fn ($q) => $q->where('doctor_id', $doctor->id))
+                ->where('status', '!=', 'completed')
+                ->with('appointment.patient')
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn ($m) => [
+                    'title' => 'Telemedicine: ' . ($m->appointment->patient->name ?? 'Patient'),
+                    'date' => $m->created_at->toDateString(),
+                    'time' => $m->created_at->format('g:i A'),
+                    'description' => 'Virtual consultation',
+                ]);
+
+            $upcomingEvents = $upcomingAppointments->concat($upcomingMeetings)
+                ->sortBy('date')
+                ->take(5)
+                ->values();
+        }
+
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.dashboard' : 'doctor.dashboard.index', compact('stats', 'recentActivities', 'upcomingEvents', 'doctor'));
     }
 }

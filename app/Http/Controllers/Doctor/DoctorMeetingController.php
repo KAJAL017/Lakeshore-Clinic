@@ -18,7 +18,9 @@ class DoctorMeetingController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('doctor.meetings.index', compact('meetings'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.telemedicine' : 'doctor.meetings.index', compact('meetings'));
     }
 
     public function show(Meeting $meeting): JsonResponse

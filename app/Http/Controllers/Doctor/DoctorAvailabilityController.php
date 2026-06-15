@@ -15,7 +15,9 @@ class DoctorAvailabilityController extends Controller
         $doctor = Doctor::where('user_id', auth()->id())->first();
         $availabilities = DoctorAvailability::where('doctor_id', $doctor?->id)->latest()->get();
 
-        return view('doctor.availability.index', compact('availabilities', 'doctor'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.availability' : 'doctor.availability.index', compact('availabilities', 'doctor'));
     }
 
     public function store(Request $request): JsonResponse

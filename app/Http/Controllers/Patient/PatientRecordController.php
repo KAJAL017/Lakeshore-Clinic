@@ -20,6 +20,8 @@ class PatientRecordController extends Controller
         $prescriptions = $patient ? Prescription::with(['doctor', 'medicines'])->where('patient_id', $patient->id)->latest()->get() : collect();
         $documents = $patient ? MedicalDocument::where('patient_id', $patient->id)->latest()->get() : collect();
 
-        return view('patient.records.index', compact('patient', 'appointments', 'consultations', 'prescriptions', 'documents'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'patient.mobile.records' : 'patient.records.index', compact('patient', 'appointments', 'consultations', 'prescriptions', 'documents'));
     }
 }

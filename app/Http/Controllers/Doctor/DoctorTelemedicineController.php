@@ -19,7 +19,9 @@ class DoctorTelemedicineController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('doctor.telemedicine.index', compact('appointments'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.appointments' : 'doctor.telemedicine.index', compact('appointments'));
     }
 
     public function show(Appointment $appointment): JsonResponse

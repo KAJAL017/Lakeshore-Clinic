@@ -14,7 +14,9 @@ class PatientTelemedicineController extends Controller
     {
         $specializations = Specialization::where('status', 'active')->get();
 
-        return view('patient.telemedicine.index', compact('specializations'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'patient.mobile.telemedicine' : 'patient.telemedicine.index', compact('specializations'));
     }
 
     public function store(Request $request): JsonResponse

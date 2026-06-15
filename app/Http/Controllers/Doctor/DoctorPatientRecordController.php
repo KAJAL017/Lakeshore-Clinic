@@ -21,7 +21,9 @@ class DoctorPatientRecordController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('doctor.records.index', compact('patients'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'doctor.mobile.records' : 'doctor.records.index', compact('patients'));
     }
 
     public function show(Patient $patient): JsonResponse

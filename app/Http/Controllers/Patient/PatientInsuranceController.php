@@ -16,7 +16,9 @@ class PatientInsuranceController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('patient.insurance.index', compact('insuranceRequests'));
+        $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+
+        return view($isMobile ? 'patient.mobile.insurance' : 'patient.insurance.index', compact('insuranceRequests'));
     }
 
     public function store(Request $request): JsonResponse

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\AppointmentStatusHistory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DoctorAppointmentLifecycleController extends Controller
 {
