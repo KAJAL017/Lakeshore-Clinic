@@ -33,6 +33,6 @@ class DoctorDashboardController extends Controller
             ['title' => 'Patient Follow-up', 'date' => now()->addDays(2)->toDateString(), 'time' => '2:00 PM', 'description' => 'Follow-up consultation'],
         ];
 
-        return view('doctor.dashboard', compact('stats', 'recentActivities', 'upcomingEvents', 'doctor'));
+        return view('doctor.dashboard.index', compact('stats', 'recentActivities', 'upcomingEvents', 'doctor'));
     }
 }

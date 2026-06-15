@@ -321,7 +321,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/booking/dates', [PatientBookingController::class, 'getAvailableDates'])->name('booking.dates');
         Route::get('/booking/slots', [PatientBookingController::class, 'getAvailableSlots'])->name('booking.slots');
 
-        Route::get('/my-appointments', [PatientBookingController::class, 'myAppointments'])->name('my-appointments');
+        Route::get('/my-appointments', function () {
+            $isMobile = preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', request()->userAgent());
+            $appointments = \App\Models\Appointment::with(['doctor', 'specialization'])
+                ->where('patient_id', auth()->id())
+                ->latest()
+                ->paginate(10);
+
+            return view($isMobile ? 'patient.mobile.my-appointments' : 'patient.appointments.index', compact('appointments'));
+        })->name('my-appointments');
         Route::get('/appointments', [PatientBookingController::class, 'myAppointments'])->name('appointments');
         Route::get('/appointments/{appointment}', [PatientBookingController::class, 'show'])->name('appointments.show');
 
