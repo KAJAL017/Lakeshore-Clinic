@@ -115,7 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async function() {
             try {
-                const response = await fetch('{{ route("logout") }}', {
+                const logoutUrl = '{{ route("admin.logout") }}';
+                const response = await fetch(logoutUrl, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

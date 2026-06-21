@@ -173,7 +173,7 @@
 {{-- Create / Edit Bottom Sheet --}}
 <div id="form-sheet" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFormSheet()"></div>
-    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[90vh] overflow-hidden transform translate-y-full transition-transform duration-300 ease-out" id="form-sheet-content">
+    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] overflow-hidden transform translate-y-full transition-transform duration-300 ease-out" id="form-sheet-content">
         <div class="flex justify-center pt-3 pb-1">
             <div class="w-10 h-1 rounded-full bg-gray-300"></div>
         </div>

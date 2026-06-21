@@ -36,14 +36,6 @@
                             <span class="text-gray-400">License</span>
                             <span class="text-gray-900 font-medium">{{ $doctor->license_number ?? '-' }}</span>
                         </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-400">Status</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium {{ $doctor->status === 'active' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' }}">{{ ucfirst($doctor->status) }}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-400">Approval</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium {{ $doctor->approval_status === 'approved' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' }}">{{ ucfirst($doctor->approval_status) }}</span>
-                        </div>
                     </div>
                 @endif
             </div>

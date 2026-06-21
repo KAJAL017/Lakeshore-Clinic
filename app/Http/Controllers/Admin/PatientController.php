@@ -77,6 +77,20 @@ class PatientController extends Controller
         ]);
     }
 
+    public function destroy(Patient $patient): JsonResponse
+    {
+        if ($patient->photo && file_exists(public_path('uploads/patients/'.$patient->photo))) {
+            unlink(public_path('uploads/patients/'.$patient->photo));
+        }
+
+        $patient->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Patient deleted successfully.',
+        ]);
+    }
+
     public function updateStatus(Request $request, Patient $patient): JsonResponse
     {
         $request->validate([

@@ -1,0 +1,83 @@
+/*
+ * Lakeshore Clinic - Website Styles
+ * Base styles, animations, and utility overrides
+ */
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    ::selection {
+        background-color: rgba(13, 79, 79, 0.15);
+        color: #111111;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-[#0d4f4f] hover:bg-[#0a3d3d] rounded-xl transition-all duration-300 hover:-translate-y-0.5;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all duration-300;
+    }
+
+    .card {
+        @apply bg-white rounded-2xl border border-slate-100 shadow-sm;
+    }
+
+    .card-hover {
+        @apply card hover:shadow-lg hover:border-slate-200 transition-all duration-300;
+    }
+
+    .section-title {
+        @apply text-3xl sm:text-4xl font-bold text-slate-900;
+    }
+
+    .section-subtitle {
+        @apply text-lg text-slate-600;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+}
+
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease forwards;
+}
+
+.mobile-menu-bar {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .hero-responsive h1 {
+        font-size: 48px !important;
+        line-height: 1.0 !important;
+    }
+
+    .hero-responsive p {
+        font-size: 18px !important;
+    }
+
+    .hero-responsive a {
+        min-width: 100% !important;
+        height: 56px !important;
+        font-size: 16px !important;
+    }
+}

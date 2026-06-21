@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuditController;
+use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminConsultationController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminDeliveryController;
@@ -21,7 +22,6 @@ use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\MeetingController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Admin\PlaceholderController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -57,17 +57,89 @@ use App\Models\Specialization;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Public Website Routes
+|--------------------------------------------------------------------------
+|
+| The root URL (/) loads the public website homepage.
+| All public pages are accessible without authentication.
+|
+*/
+
 Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
+    return view('welcome');
+})->name('home');
 
 Route::get('/unauthorized', UnauthorizedController::class)->name('unauthorized');
+
+/*
+|--------------------------------------------------------------------------
+| Public Website Pages
+|--------------------------------------------------------------------------
+|
+| Static public-facing pages for the website frontend.
+|
+*/
+
+Route::get('/about', function () {
+    return view('website.pages.about');
+})->name('website.about');
+
+Route::get('/medical-center', function () {
+    return view('website.pages.medical-center');
+})->name('website.medical-center');
+
+Route::get('/pharmacy', function () {
+    return view('website.pages.medicore-pharmacy');
+})->name('website.pharmacy');
+
+Route::get('/wellness', function () {
+    return view('website.pages.wellness-center');
+})->name('website.wellness');
+
+Route::get('/book-online', function () {
+    return view('website.pages.book-online');
+})->name('website.book-online');
+
+Route::get('/services', function () {
+    return view('website.pages.services');
+})->name('website.services');
+
+Route::get('/contact', function () {
+    return view('website.pages.contact');
+})->name('website.contact');
 
 Route::get('/book-appointment', [PatientBookingController::class, 'index'])->name('public.booking');
 Route::post('/book-appointment', [PatientBookingController::class, 'store'])->name('public.booking.store');
 Route::get('/book-appointment/doctors', [PatientBookingController::class, 'getDoctors'])->name('public.booking.doctors');
 Route::get('/book-appointment/dates', [PatientBookingController::class, 'getAvailableDates'])->name('public.booking.dates');
 Route::get('/book-appointment/slots', [PatientBookingController::class, 'getAvailableSlots'])->name('public.booking.slots');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Authentication Routes (Guest)
+|--------------------------------------------------------------------------
+|
+| Admin login page at /admin/login.
+| Unauthenticated users trying to access admin are redirected here.
+|
+*/
+
+Route::middleware('guest')->group(function () {
+    Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+    Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
+});
+
+/*
+|--------------------------------------------------------------------------
+| General Authentication Routes (Guest)
+|--------------------------------------------------------------------------
+|
+| Doctor and patient login pages.
+| General login for doctors/patients.
+|
+*/
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -99,11 +171,11 @@ Route::middleware('guest')->group(function () {
     })->name('patient.login');
 });
 
-Route::get('/book-appointment', [PatientBookingController::class, 'index'])->name('public.booking');
-Route::post('/book-appointment', [PatientBookingController::class, 'store'])->middleware('throttle:5,1')->name('public.booking.store');
-Route::get('/book-appointment/doctors', [PatientBookingController::class, 'getDoctors'])->name('public.booking.doctors');
-Route::get('/book-appointment/dates', [PatientBookingController::class, 'getAvailableDates'])->name('public.booking.dates');
-Route::get('/book-appointment/slots', [PatientBookingController::class, 'getAvailableSlots'])->name('public.booking.slots');
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -118,7 +190,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Panel Routes
+    |--------------------------------------------------------------------------
+    |
+    | All admin routes are prefixed with /admin.
+    | Protected by auth + admin role middleware.
+    |
+    */
+
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
@@ -137,6 +221,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/patients', [PatientController::class, 'index'])->name('patients');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
         Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
+        Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
         Route::put('/patients/{patient}/status', [PatientController::class, 'updateStatus'])->name('patients.status');
         Route::post('/patients/{patient}/photo', [PatientController::class, 'updatePhoto'])->name('patients.photo');
         Route::delete('/patients/{patient}/photo', [PatientController::class, 'removePhoto'])->name('patients.photo.remove');
@@ -199,7 +284,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/records/{document}/download', [AdminPatientRecordController::class, 'downloadDocument'])->name('records.download');
 
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
-        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
         Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
 
         Route::get('/insurance', [AdminInsuranceController::class, 'index'])->name('insurance');
@@ -241,9 +325,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/telemedicine/{appointment}', [AdminTelemedicineController::class, 'show'])->name('telemedicine.show');
         Route::put('/telemedicine/{appointment}/status', [AdminTelemedicineController::class, 'updateStatus'])->name('telemedicine.status');
 
-        Route::get('/payments', [PlaceholderController::class, 'payments'])->name('payments');
-        Route::get('/insurance', [PlaceholderController::class, 'insurance'])->name('insurance');
-        Route::get('/reports', [PlaceholderController::class, 'reports'])->name('reports');
+        Route::get('/reports', function () {
+            return view('admin.reports.index');
+        })->name('reports');
 
         Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
         Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
@@ -262,6 +346,12 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.update-role');
         Route::put('/users/{user}/status', [AdminUserController::class, 'updateStatus'])->name('users.update-status');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Doctor Panel Routes
+    |--------------------------------------------------------------------------
+    */
 
     Route::prefix('doctor')->name('doctor.')->middleware('role:doctor')->group(function () {
         Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
@@ -376,6 +466,12 @@ Route::middleware('auth')->group(function () {
             return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);
         })->name('notifications.mark-all-read');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Patient Panel Routes
+    |--------------------------------------------------------------------------
+    */
 
     Route::prefix('patient')->name('patient.')->middleware('role:patient')->group(function () {
         Route::get('/dashboard', [PatientDashboardController::class, 'index'])->name('dashboard');

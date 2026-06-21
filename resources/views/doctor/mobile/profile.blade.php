@@ -33,19 +33,6 @@
                 Dr. {{ $doctor->first_name ?? auth()->user()->name ?? '' }} {{ $doctor->last_name ?? '' }}
             </h1>
             <p class="text-blue-200 text-sm mt-0.5">{{ auth()->user()->email }}</p>
-
-            <div class="flex items-center justify-center gap-2 mt-3">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                    @if(($doctor->status ?? '') === 'active') bg-emerald-400/20 text-emerald-200
-                    @else bg-amber-400/20 text-amber-200 @endif">
-                    {{ ucfirst($doctor->status ?? 'active') }}
-                </span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                    @if(($doctor->approval_status ?? '') === 'approved') bg-blue-400/20 text-blue-200
-                    @else bg-amber-400/20 text-amber-200 @endif">
-                    {{ ucfirst($doctor->approval_status ?? 'pending') }}
-                </span>
-            </div>
         </div>
     </div>
 
@@ -75,16 +62,6 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-xs text-gray-400 font-medium">Phone</p>
                     <p class="text-sm text-gray-900 font-semibold">{{ $doctor->phone ?? 'Not provided' }}</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs text-gray-400 font-medium">Status</p>
-                    <p class="text-sm font-semibold {{ ($doctor->status ?? '') === 'active' ? 'text-emerald-600' : 'text-amber-600' }}">{{ ucfirst($doctor->status ?? 'active') }}</p>
                 </div>
             </div>
 
@@ -346,10 +323,12 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openEditSheet = function() {
         const sheet = document.getElementById('edit-profile-sheet');
         const panel = document.getElementById('edit-profile-panel');
+        const nav = document.querySelector('.mobile-bottom-nav');
+        if (nav) nav.style.display = 'none';
         sheet.classList.remove('hidden');
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-                panel.style.transform = 'translateY(0)';
+                panel.style.translate = '0';
             });
         });
     };
@@ -357,18 +336,24 @@ document.addEventListener('DOMContentLoaded', function() {
     window.closeEditSheet = function() {
         const panel = document.getElementById('edit-profile-panel');
         const sheet = document.getElementById('edit-profile-sheet');
-        panel.style.transform = 'translateY(100%)';
-        setTimeout(function() { sheet.classList.add('hidden'); }, 300);
+        const nav = document.querySelector('.mobile-bottom-nav');
+        panel.style.translate = '0 100%';
+        setTimeout(function() {
+            sheet.classList.add('hidden');
+            if (nav) nav.style.display = '';
+        }, 300);
     };
 
     // Password Bottom Sheet
     window.openPasswordSheet = function() {
         const sheet = document.getElementById('password-sheet');
         const panel = document.getElementById('password-panel');
+        const nav = document.querySelector('.mobile-bottom-nav');
+        if (nav) nav.style.display = 'none';
         sheet.classList.remove('hidden');
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-                panel.style.transform = 'translateY(0)';
+                panel.style.translate = '0';
             });
         });
     };
@@ -376,9 +361,11 @@ document.addEventListener('DOMContentLoaded', function() {
     window.closePasswordSheet = function() {
         const panel = document.getElementById('password-panel');
         const sheet = document.getElementById('password-sheet');
-        panel.style.transform = 'translateY(100%)';
+        const nav = document.querySelector('.mobile-bottom-nav');
+        panel.style.translate = '0 100%';
         setTimeout(function() {
             sheet.classList.add('hidden');
+            if (nav) nav.style.display = '';
             document.getElementById('password-form').reset();
         }, 300);
     };

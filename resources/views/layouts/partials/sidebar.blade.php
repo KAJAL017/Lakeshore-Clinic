@@ -1,5 +1,5 @@
 <aside id="sidebar" class="fixed top-0 left-0 z-40 h-full w-64 bg-sidebar text-white sidebar-transition -translate-x-full lg:translate-x-0">
-    <div class="flex items-center justify-center h-20 px-4 border-b border-white/10">
+    <div class="flex items-center justify-center h-20 px-4 border-b border-white/10 bg-[#DC143C]">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center justify-center">
             @php
                 $logo = \App\Models\Setting::getValue('clinic_logo');
@@ -50,7 +50,7 @@
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span>Availability</span>
+                    <span>Dr's Availability</span>
                 </a>
             </li>
 
@@ -68,7 +68,7 @@
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    <span>Appointments</span>
+                    <span>Clinic Appointments</span>
                 </a>
             </li>
 

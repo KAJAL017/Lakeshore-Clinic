@@ -2,10 +2,10 @@
 
 use App\Models\User;
 
-test('the application redirects to dashboard', function () {
+test('the root URL shows the public website', function () {
     $response = $this->get('/');
 
-    $response->assertRedirect('/dashboard');
+    $response->assertStatus(200);
 });
 
 test('the dashboard returns a successful response', function () {
